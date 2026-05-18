@@ -1,204 +1,143 @@
-    {% extends 'pages/base.html' %}
+{% extends 'pages/base.html' %} {% load static %} {% block content %}
 
-    {% block content %}
+<section class="products-page">
+  <div class="search-container">
+    <div class="filter">
+      <select>
+        <option value="all">All</option>
+        <option value="burger">Burger</option>
+        <option value="fries">Fries</option>
+        <option value="pizza">Pizza</option>
+        <option value="drinks">Drinks</option>
+      </select>
+    </div>
 
-    <section class="products-page">
+    <div class="search-bar">
+      <input type="text" placeholder="Search food..." />
+    </div>
 
-        <div class="search-container">
+    <div class="action-buttons-top">
+      <button class="wishlist-btn" onclick="openModal('wishlist')">
+        ♡ Wishlist
+      </button>
 
-            <div class="filter">
-                <select>
-                    <option value="all">All</option>
-                    <option value="burger">Burger</option>
-                    <option value="fries">Fries</option>
-                    <option value="pizza">Pizza</option>
-                    <option value="drinks">Drinks</option>
-                </select>
-            </div>
+      <button class="cart-btn" onclick="openModal('cart')">🛒 View Cart</button>
+    </div>
+  </div>
 
-            <div class="search-bar">
-                <input type="text" placeholder="Search food...">
-            </div>
+  <div class="products-header">
+    <h1>Our Menu</h1>
+    <p>Choose your favorite meals</p>
+  </div>
 
-            <div class="action-buttons-top">
+  <div class="products-grid">
+    {% for product in products %}
+    <div class="product-card">
+      <div class="product-image">
+        {% if product.image_src %}
+        <img src="{{ product.image_src }}" alt="{{ product.prodname }}" />
+        {% endif %}
+      </div>
+      <h3>{{ product.prodname }}</h3>
+      <p class="desc">{{ product.description }}</p>
+      <div class="product-footer">
+        <span>₱{{ product.price }}</span>
 
-                <button class="wishlist-btn" onclick="openModal('wishlist')">
-                    ♡ Wishlist
-                </button>
-
-                <button class="cart-btn" onclick="openModal('cart')">
-                    🛒 View Cart
-                </button>
-
-            </div>
-
+        <div class="product-action-buttons">
+          <button class="add-btn">Add</button>
+          <button class="heart-btn" onclick="toggleHeart(this)">♡</button>
         </div>
+      </div>
+    </div>
+    {% empty %}
+    <p>No products available.</p>
+    {% endfor %}
+  </div>
+  <script>
+    function toggleHeart(btn) {
+      btn.classList.toggle("active");
 
-        <div class="products-header">
-            <h1>Our Menu</h1>
-            <p>Choose your favorite meals</p>
-        </div>
-
-        <div class="products-grid">
-
-            <!-- PRODUCT CARD TEMPLATE (DUPLICATE FOR NOW) -->
-
-            <div class="product-card">
-                <div class="product-image"></div>
-                <h3>Cheeseburger</h3>
-                <p class="desc">Juicy beef patty with cheese</p>
-                <div class="product-footer">
-
-                    <span>₱120</span>
-
-                    <div class="product-action-buttons">
-                        <button class="add-btn">Add</button>
-                        <button class="heart-btn" onclick="toggleHeart(this)">♡</button>
-                    </div>
-
-                </div>        
-            </div>
-
-            <div class="product-card">
-                <div class="product-image"></div>
-                <h3>Chicken Burger</h3>
-                <p class="desc">Crispy chicken with sauce</p>
-                <div class="product-footer">
-
-                    <span>₱120</span>
-
-                    <div class="product-action-buttons">
-                        <button class="add-btn">Add</button>
-                        <button class="heart-btn" onclick="toggleHeart(this)">♡</button>
-                    </div>
-
-                </div>
-            </div>
-
-            <div class="product-card">
-                <div class="product-image"></div>
-                <h3>Fries</h3>
-                <p class="desc">Golden crispy fries</p>
-                <div class="product-footer">
-
-                    <span>₱120</span>
-
-                    <div class="product-action-buttons">
-                        <button class="add-btn">Add</button>
-                        <button class="heart-btn" onclick="toggleHeart(this)">♡</button>
-                    </div>
-
-                </div>
-            </div>
-
-            <div class="product-card">
-                <div class="product-image"></div>
-                <h3>Pizza</h3>
-                <p class="desc">Cheesy pepperoni pizza</p>
-                <div class="product-footer">
-
-                    <span>₱120</span>
-
-                    <div class="product-action-buttons">
-                        <button class="add-btn">Add</button>
-                        <button class="heart-btn" onclick="toggleHeart(this)">♡</button>
-                    </div>
-
-                </div>
-            </div>
-
-        </div>
-<script>
-
-function toggleHeart(btn) {
-    btn.classList.toggle("active");
-
-    if (btn.classList.contains("active")) {
+      if (btn.classList.contains("active")) {
         btn.innerHTML = "♥";
-    } else {
+      } else {
         btn.innerHTML = "♡";
+      }
     }
-}
 
-/* =========================
+    /* =========================
    OPEN MODAL
 ========================= */
 
-function openModal(type) {
+    function openModal(type) {
+      // Save modal state (for refresh persistence)
+      localStorage.setItem("activeModal", type);
 
-    // Save modal state (for refresh persistence)
-    localStorage.setItem("activeModal", type);
+      const modal = document.getElementById("modal");
+      const backdrop = document.getElementById("modal-backdrop");
+      const title = document.getElementById("modal-title");
+      const body = document.getElementById("modal-body");
 
-    const modal = document.getElementById("modal");
-    const backdrop = document.getElementById("modal-backdrop");
-    const title = document.getElementById("modal-title");
-    const body = document.getElementById("modal-body");
+      // safety check (prevents null errors)
+      if (!modal || !backdrop || !title || !body) return;
 
-    // safety check (prevents null errors)
-    if (!modal || !backdrop || !title || !body) return;
+      modal.style.display = "block";
+      backdrop.style.display = "block";
 
-    modal.style.display = "block";
-    backdrop.style.display = "block";
-
-    const routes = {
+      const routes = {
         cart: {
-            title: "My Cart",
-            url: "/main/cart/"
+          title: "My Cart",
+          url: "/main/cart/",
         },
         wishlist: {
-            title: "My Wishlist",
-            url: "/main/wishlist/"
+          title: "My Wishlist",
+          url: "/main/wishlist/",
         },
         checkout: {
-            title: "Checkout",
-            url: "/main/checkout/"
-        }
-    };
+          title: "Checkout",
+          url: "/main/checkout/",
+        },
+      };
 
-    const selected = routes[type];
+      const selected = routes[type];
 
-    if (!selected) {
+      if (!selected) {
         console.error("Unknown modal type:", type);
         return;
+      }
+
+      title.innerText = selected.title;
+
+      htmx.ajax("GET", selected.url, {
+        target: "#modal-body",
+        swap: "innerHTML",
+      });
     }
 
-    title.innerText = selected.title;
-
-    htmx.ajax("GET", selected.url, {
-        target: "#modal-body",
-        swap: "innerHTML"
-    });
-}
-
-/* =========================
+    /* =========================
    CLOSE MODAL
 ========================= */
 
-function closeModal() {
+    function closeModal() {
+      // REMOVE SAVED STATE
+      localStorage.removeItem("activeModal");
 
-    // REMOVE SAVED STATE
-    localStorage.removeItem("activeModal");
+      document.getElementById("modal").style.display = "none";
+      document.getElementById("modal-backdrop").style.display = "none";
+      document.getElementById("modal-body").innerHTML = "";
+    }
 
-    document.getElementById("modal").style.display = "none";
-    document.getElementById("modal-backdrop").style.display = "none";
-    document.getElementById("modal-body").innerHTML = "";
-}
-
-/* =========================
+    /* =========================
    RESTORE MODAL AFTER REFRESH
 ========================= */
 
-window.addEventListener("load", () => {
+    window.addEventListener("load", () => {
+      const savedModal = localStorage.getItem("activeModal");
 
-    const savedModal = localStorage.getItem("activeModal");
-
-    if (savedModal) {
+      if (savedModal) {
         openModal(savedModal);
-    }
+      }
+    });
+  </script>
+</section>
 
-});
-
-</script>
-    </section>
-
-    {% endblock %}
+{% endblock %}
