@@ -1,26 +1,358 @@
 {% load static %}
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
+  <head>
+    <meta charset="UTF-8" />
     <title>PyShop</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-{% load static %}
+    {% load static %}
 
-<link rel="stylesheet" href="{% static 'css/style.css' %}">
-</head>
-<body>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}" />
+  </head>
+  <body>
+    {% include 'includes/navbar.html' %} {% include 'includes/modals.html' %}
+    <main class="container">{% block content %} {% endblock %}</main>
 
-{% include 'includes/navbar.html' %}
-{% include 'includes/modals.html' %}
-    <main class="container">
-        {% block content %}
-        {% endblock %}
-    </main>
+    {% include 'includes/footer.html' %}
 
-{% include 'includes/footer.html' %}
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+    <script>
+      // Wishlist utility functions (store items in localStorage)
+      function getWishlist() {
+        try {
+          return JSON.parse(localStorage.getItem("wishlist") || "[]");
+        } catch (e) {
+          return [];
+        }
+      }
 
-<script src="https://unpkg.com/htmx.org@1.9.10"></script>
-</body>
+      function saveWishlist(list) {
+        localStorage.setItem("wishlist", JSON.stringify(list));
+      }
+
+      function renderWishlistContainer(container) {
+        const list = getWishlist();
+        container.innerHTML = "";
+        if (!list.length) {
+          container.innerHTML = "<p>Your wishlist is empty.</p>";
+          return;
+        }
+        list.forEach((item) => {
+          const el = document.createElement("div");
+          el.className = "wishlist-item";
+          el.innerHTML = `
+                <div class="wish-left">
+                    <img src="${item.image}" alt="${item.name}" />
+                    <p>${item.name}</p>
+                </div>
+                <div class="wish-right">
+                    <span>₱${item.price}</span>
+                    <button class="remove-wish" onclick="removeFromWishlist('${item.id}')">Remove</button>
+                </div>
+            `;
+          container.appendChild(el);
+        });
+      }
+
+      function renderWishlist() {
+        const container = document.querySelector(".wishlist-container");
+        if (container) renderWishlistContainer(container);
+      }
+
+      function toggleHeart(btn) {
+        const id = btn.dataset.id;
+        const name = btn.dataset.name;
+        const price = btn.dataset.price;
+        const image = btn.dataset.image;
+        let list = getWishlist();
+        const exists = list.find((i) => String(i.id) === String(id));
+        if (!exists) {
+          // add
+          btn.classList.add("active");
+          btn.innerHTML = "♥";
+          list.push({ id, name, price, image });
+          saveWishlist(list);
+        } else {
+          // remove
+          btn.classList.remove("active");
+          btn.innerHTML = "♡";
+          list = list.filter((i) => String(i.id) !== String(id));
+          saveWishlist(list);
+        }
+        renderWishlist();
+      }
+
+      function removeFromWishlist(id) {
+        let list = getWishlist();
+        list = list.filter((i) => String(i.id) !== String(id));
+        saveWishlist(list);
+        // update modal
+        renderWishlist();
+        // update any heart buttons on the page
+        const btn = document.querySelector(`.heart-btn[data-id="${id}"]`);
+        if (btn) {
+          btn.classList.remove("active");
+          btn.innerHTML = "♡";
+        }
+      }
+
+      // After HTMX swaps modal content, render wishlist inside it
+      document.body.addEventListener("htmx:afterSwap", function (evt) {
+        if (
+          evt.detail &&
+          evt.detail.target &&
+          evt.detail.target.id === "modal-body"
+        ) {
+          renderWishlist();
+          renderCart();
+          renderCheckout();
+        }
+      });
+
+      // On page load, mark hearts for items already in wishlist
+      document.addEventListener("DOMContentLoaded", function () {
+        const list = getWishlist();
+        list.forEach((item) => {
+          const btn = document.querySelector(
+            `.heart-btn[data-id="${item.id}"]`,
+          );
+          if (btn) {
+            btn.classList.add("active");
+            btn.innerHTML = "♥";
+          }
+        });
+        // mark add buttons for items already in cart and cap quantities by stock
+        const cart = getCart();
+        let dirty = false;
+        cart.forEach((c) => {
+          // if stock exists from previous save, enforce cap
+          if (c.stock !== undefined && Number(c.qty) > Number(c.stock)) {
+            c.qty = Number(c.stock);
+            dirty = true;
+          }
+          const abtn = document.querySelector(`.add-btn[data-id="${c.id}"]`);
+          if (abtn) {
+            abtn.classList.add("in-cart");
+            abtn.innerText = "Added";
+          }
+        });
+        if (dirty) saveCart(cart);
+        // update cart count immediately on load
+        updateCartCount(cart.length);
+      });
+
+      /* ========== CART FUNCTIONS ========== */
+      function getCart() {
+        try {
+          return JSON.parse(localStorage.getItem("cart") || "[]");
+        } catch (e) {
+          return [];
+        }
+      }
+
+      function saveCart(list) {
+        localStorage.setItem("cart", JSON.stringify(list));
+      }
+
+      function renderCartContainer(container) {
+        const list = getCart();
+        container.innerHTML = "";
+        if (!list.length) {
+          container.innerHTML = "<p>Your cart is empty.</p>";
+          updateCartCount(0);
+          renderCartSummary([]);
+          return;
+        }
+        // synchronize stock from page buttons (in case stored items lack stock)
+        let dirty = false;
+        list.forEach((item) => {
+          const prodBtn = document.querySelector(
+            `.add-btn[data-id="${item.id}"]`,
+          );
+          if (
+            prodBtn &&
+            prodBtn.dataset &&
+            prodBtn.dataset.stock !== undefined
+          ) {
+            const pageStock = Number(prodBtn.dataset.stock);
+            if (item.stock === undefined || Number(item.stock) !== pageStock) {
+              item.stock = pageStock;
+              dirty = true;
+            }
+            if (Number(item.qty) > pageStock) {
+              item.qty = pageStock;
+              dirty = true;
+            }
+          }
+        });
+        if (dirty) saveCart(list);
+
+        list.forEach((item) => {
+          const el = document.createElement("div");
+          el.className = "cart-item";
+          const canIncrease =
+            item.stock === undefined || Number(item.qty) < Number(item.stock);
+          const canDecrease = Number(item.qty) > 1;
+          const plusDisabled = canIncrease ? "" : "disabled";
+          const minusDisabled = canDecrease ? "" : "disabled";
+          el.innerHTML = `
+            <div class="cart-left">
+              <div class="cart-image"><img src="${item.image}" alt="${item.name}" /></div>
+              <div class="cart-info">
+                <h3>${item.name}</h3>
+                <p>Qty: <span class="cart-qty">${item.qty}</span></p>
+              </div>
+            </div>
+            <div class="cart-right">
+              <div class="cart-price">₱${item.price}</div>
+              <div class="quantity-control">
+                <button ${minusDisabled} onclick="changeQuantity('${item.id}', -1)">-</button>
+                <span>${item.qty}</span>
+                <button ${plusDisabled} onclick="changeQuantity('${item.id}', 1)">+</button>
+              </div>
+              <button class="remove-btn" onclick="removeFromCart('${item.id}')">Remove</button>
+            </div>
+          `;
+          container.appendChild(el);
+        });
+        updateCartCount(list.length);
+        renderCartSummary(list);
+      }
+
+      function renderCart() {
+        const container = document.querySelector(".cart-container");
+        if (container) renderCartContainer(container);
+      }
+
+      function addToCart(btn) {
+        const id = btn.dataset.id;
+        const name = btn.dataset.name;
+        const price = btn.dataset.price;
+        const image = btn.dataset.image;
+        const stock = btn.dataset.stock ? Number(btn.dataset.stock) : null;
+        let list = getCart();
+        const existing = list.find((i) => String(i.id) === String(id));
+        if (existing) {
+          const newQty = Number(existing.qty) + 1;
+          if (stock !== null && newQty > stock) {
+            existing.qty = stock;
+            alert("Only " + stock + " left in stock");
+          } else {
+            existing.qty = newQty;
+          }
+        } else {
+          list.push({ id, name, price, image, qty: 1, stock: stock });
+        }
+        saveCart(list);
+        // update button UI
+        btn.classList.add("in-cart");
+        btn.innerText = "Added";
+        // update modal if open
+        renderCart();
+        // update cart count immediately
+        updateCartCount(getCart().length);
+      }
+
+      function removeFromCart(id) {
+        let list = getCart();
+        list = list.filter((i) => String(i.id) !== String(id));
+        saveCart(list);
+        renderCart();
+        // update add button
+        const abtn = document.querySelector(`.add-btn[data-id="${id}"]`);
+        if (abtn) {
+          abtn.classList.remove("in-cart");
+          abtn.innerText = "Add";
+        }
+      }
+
+      function changeQuantity(id, delta) {
+        const list = getCart();
+        const item = list.find((i) => String(i.id) === String(id));
+        if (!item) return;
+        const desired = Number(item.qty) + delta;
+        if (delta > 0 && item.stock !== undefined) {
+          if (desired > Number(item.stock)) {
+            item.qty = Number(item.stock);
+            alert("Only " + item.stock + " left in stock");
+          } else {
+            item.qty = desired;
+          }
+        } else {
+          item.qty = Math.max(1, desired);
+        }
+        saveCart(list);
+        renderCart();
+      }
+
+      function updateCartCount(n) {
+        const span = document.querySelector(".cart-count");
+        if (span) span.innerText = `${n} Item${n !== 1 ? "s" : ""}`;
+        const cartBtn = document.querySelector(".cart-btn");
+        if (cartBtn) cartBtn.innerText = `🛒 View Cart (${n})`;
+      }
+
+      function renderCartSummary(list) {
+        const summary = document.querySelector(".cart-summary");
+        if (!summary) return;
+        const subtotal = list.reduce(
+          (s, i) => s + Number(i.price) * Number(i.qty),
+          0,
+        );
+        const delivery = subtotal > 0 ? 40 : 0;
+        const total = subtotal + delivery;
+        summary.innerHTML = `
+          <div class="summary-row"><span>Subtotal</span><span>₱${subtotal}</span></div>
+          <div class="summary-row"><span>Delivery Fee</span><span>₱${delivery}</span></div>
+          <div class="summary-row total"><span>Total</span><span>₱${total}</span></div>
+          <button class="checkout-btn" onclick="openModal('checkout')">Proceed to Checkout</button>
+        `;
+      }
+
+      // Render checkout modal contents from cart
+      function renderCheckout() {
+        const items = getCart();
+        const container = document.querySelector(".checkout-items");
+        const payBtn = document.querySelector(".pay-btn");
+        const summary = document.querySelector(".checkout-summary");
+        if (!container || !summary) return;
+        container.innerHTML = "";
+        if (!items.length) {
+          container.innerHTML = "<p>Your cart is empty.</p>";
+          // clear summary
+          summary.innerHTML = `
+            <div class="row"><span>Subtotal</span><span>₱0</span></div>
+            <div class="row"><span>Delivery Fee</span><span>₱0</span></div>
+            <div class="row total"><span>Total</span><span>₱0</span></div>
+          `;
+          if (payBtn) payBtn.disabled = true;
+          return;
+        }
+        let subtotal = 0;
+        items.forEach((it) => {
+          const line = document.createElement("div");
+          line.className = "checkout-item";
+          const lineTotal = Number(it.price) * Number(it.qty);
+          subtotal += lineTotal;
+          line.innerHTML = `
+            <div class="item-left">
+              <span class="item-name">${it.name}</span>
+              <span class="item-qty">x${it.qty}</span>
+            </div>
+            <div class="item-right">₱${lineTotal}</div>
+          `;
+          container.appendChild(line);
+        });
+        const delivery = subtotal > 0 ? 40 : 0;
+        const total = subtotal + delivery;
+        summary.innerHTML = `
+          <div class="row"><span>Subtotal</span><span>₱${subtotal}</span></div>
+          <div class="row"><span>Delivery Fee</span><span>₱${delivery}</span></div>
+          <div class="row total"><span>Total</span><span>₱${total}</span></div>
+        `;
+        if (payBtn) payBtn.disabled = false;
+      }
+    </script>
+  </body>
 </html>

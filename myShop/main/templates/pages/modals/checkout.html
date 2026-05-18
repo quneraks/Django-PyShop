@@ -1,95 +1,60 @@
 <div class="checkout-page">
+  <!-- SCROLLABLE CONTENT -->
+  <div class="checkout-content">
+    <!-- ORDER ITEMS -->
+    <div class="checkout-section">
+      <h3>Order Summary</h3>
 
-    <!-- SCROLLABLE CONTENT -->
-    <div class="checkout-content">
-
-        <!-- ORDER ITEMS -->
-        <div class="checkout-section">
-
-            <h3>Order Summary</h3>
-
-            <div class="checkout-items">
-
-                <!-- Django loop -->
-                <div class="checkout-item">
-                    <div class="item-left">
-                        <span class="item-name">Cheeseburger</span>
-                        <span class="item-qty">x1</span>
-                    </div>
-                    <div class="item-right">₱120</div>
-                </div>
-
-                <div class="checkout-item">
-                    <div class="item-left">
-                        <span class="item-name">Fries</span>
-                        <span class="item-qty">x1</span>
-                    </div>
-                    <div class="item-right">₱60</div>
-                </div>
-
-            </div>
-
-        </div>
-
-        <!-- DELIVERY -->
-        <div class="checkout-section">
-
-            <h3>Delivery Address</h3>
-
-            <div class="address-selected" onclick="loadAddressView()">
-
-                <div class="address-text">
-                    <strong>Home</strong>
-                    <p>123 Main Street, Nueva Ecija</p>
-                </div>
-
-                <span class="arrow">›</span>
-
-            </div>
-
-        </div>
-
-        <!-- PAYMENT -->
-        <div class="checkout-section">
-
-            <h3>💳 Payment Method</h3>
-
-            <select class="payment-select">
-                <option>Cash on Delivery</option>
-                <option>GCash</option>
-                <option>Card Payment</option>
-            </select>
-
-        </div>
-
+      <div class="checkout-items">
+        <!-- Items will be inserted by JavaScript -->
+      </div>
     </div>
 
-    <!-- STICKY FOOTER -->
-    <div class="checkout-footer">
+    <!-- DELIVERY -->
+    <div class="checkout-section">
+      <h3>Delivery Address</h3>
 
-        <div class="checkout-summary">
-
-            <div class="row">
-                <span>Subtotal</span>
-                <span>₱180</span>
-            </div>
-
-            <div class="row">
-                <span>Delivery Fee</span>
-                <span>₱40</span>
-            </div>
-
-            <div class="row total">
-                <span>Total</span>
-                <span>₱220</span>
-            </div>
-
+      <div class="address-selected" onclick="loadAddressView()">
+        <div class="address-text">
+          <strong>Home</strong>
+          <p>123 Main Street, Nueva Ecija</p>
         </div>
 
-        <button class="pay-btn">
-            Place Order
-        </button>
-
+        <span class="arrow">›</span>
+      </div>
     </div>
 
+    <!-- PAYMENT -->
+    <div class="checkout-section">
+      <h3>💳 Payment Method</h3>
+
+      <select class="payment-select">
+        <option>Cash on Delivery</option>
+        <option>GCash</option>
+        <option>Card Payment</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- STICKY FOOTER -->
+  <div class="checkout-footer">
+    <div class="checkout-summary">
+      <div class="row">
+        <span>Subtotal</span>
+        <span>₱180</span>
+      </div>
+
+      <div class="row">
+        <span>Delivery Fee</span>
+        <span>₱40</span>
+      </div>
+
+      <div class="row total">
+        <span>Total</span>
+        <span>₱220</span>
+      </div>
+    </div>
+
+    <button class="pay-btn">Place Order</button>
+  </div>
 </div>

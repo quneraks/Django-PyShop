@@ -1,6 +1,7 @@
 from django.shortcuts import render
 from .models import Product
 from django.templatetags.static import static
+from django.db.models import Q
 
 
 def index(request):
@@ -8,7 +9,10 @@ def index(request):
 
 
 def products(request):
+    q = request.GET.get('q', '').strip()
     products = Product.objects.all()
+    if q:
+        products = products.filter(Q(prodname__icontains=q) | Q(description__icontains=q))
     # compute a safe image source to avoid complex template logic
     for p in products:
         if p.image_url:
@@ -18,7 +22,7 @@ def products(request):
                 p.image_src = static(p.image_url)
         else:
             p.image_src = ''
-    return render(request, 'pages/products.html', {'products': products})
+    return render(request, 'pages/products.html', {'products': products, 'q': q})
 
 def transactions(request):
     return render(request, 'pages/transac.html')

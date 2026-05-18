@@ -13,15 +13,28 @@
     </div>
 
     <div class="search-bar">
-      <input type="text" placeholder="Search food..." />
+      <form method="get" action="">
+        <input
+          type="text"
+          name="q"
+          placeholder="Search food..."
+          value="{{ q }}"
+        />
+      </form>
     </div>
 
     <div class="action-buttons-top">
-      <button class="wishlist-btn" onclick="openModal('wishlist')">
+      <button
+        type="button"
+        class="wishlist-btn"
+        onclick="openModal('wishlist')"
+      >
         ♡ Wishlist
       </button>
 
-      <button class="cart-btn" onclick="openModal('cart')">🛒 View Cart</button>
+      <button type="button" class="cart-btn" onclick="openModal('cart')">
+        🛒 View Cart
+      </button>
     </div>
   </div>
 
@@ -44,13 +57,37 @@
         <span>₱{{ product.price }}</span>
 
         <div class="product-action-buttons">
-          <button class="add-btn">Add</button>
-          <button class="heart-btn" onclick="toggleHeart(this)">♡</button>
+          <button
+            type="button"
+            class="add-btn"
+            onclick="addToCart(this)"
+            data-id="{{ product.id }}"
+            data-name="{{ product.prodname }}"
+            data-price="{{ product.price }}"
+            data-image="{{ product.image_src }}"
+            data-stock="{{ product.stock|default:0 }}"
+          >
+            Add
+          </button>
+          <button
+            type="button"
+            class="heart-btn"
+            onclick="toggleHeart(this)"
+            data-id="{{ product.id }}"
+            data-name="{{ product.prodname }}"
+            data-price="{{ product.price }}"
+            data-image="{{ product.image_src }}"
+          >
+            ♡
+          </button>
         </div>
       </div>
     </div>
     {% empty %}
-    <p>No products available.</p>
+    <div class="no-results">
+      <h3>We couldn't find any results</h3>
+      <p>Please try a different search keyword or check out our bestsellers.</p>
+    </div>
     {% endfor %}
   </div>
   <script>
