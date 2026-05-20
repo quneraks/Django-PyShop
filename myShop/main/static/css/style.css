@@ -157,17 +157,53 @@ body {
 
 .food-card {
   background: #fff;
-  padding: 20px;
+  padding: 16px;
   width: 200px;
+  height: 220px;
   border-radius: 10px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: flex-end;
+  text-align: left;
+  color: #111;
+}
+
+/* When card has a background image */
+.food-card.has-bg {
+  background-size: cover;
+  background-position: center;
+  color: #fff; /* text will be white over image */
+}
+
+/* subtle gradient overlay to improve text readability */
+.food-card.has-bg::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  background: linear-gradient(
+    180deg,
+    rgba(0, 0, 0, 0.15) 40%,
+    rgba(0, 0, 0, 0.6) 100%
+  );
+  z-index: 0;
+}
+
+.food-card .card-content {
+  position: relative;
+  z-index: 1;
 }
 
 /*======================= PRODUCTS ======================*/
 
 /*========== SEARCH BOX =============*/
 .filter {
-  width: 8%;
+  width: auto;
+  min-width: 160px; /* ensure select is wide enough to show option text */
 }
 
 /* MAIN LAYOUT */

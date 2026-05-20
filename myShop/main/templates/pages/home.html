@@ -1,36 +1,48 @@
-{% extends 'pages/base.html' %}
-
-{% block content %}
+{% extends 'pages/base.html' %} {% block content %}
 
 <section class="hero">
-    <div class="hero-content">
-        <h1>Welcome to PyShop</h1>
-        <p>Fresh, delicious food delivered fast and easy.</p>
-        <a href="{% url 'products' %}" class="btn">Order Now</a>
-    </div>
+  <div class="hero-content">
+    <h1>Welcome to PyShop</h1>
+    <p>Fresh, delicious food delivered fast and easy.</p>
+    <a href="{% url 'products' %}" class="btn">Order Now</a>
+  </div>
 </section>
 
 <section class="featured">
-    <h2>Featured Foods</h2>
+  <h2>Featured Foods</h2>
 
-    <div class="food-grid">
-
-        <div class="food-card">
-            <h3>Cheeseburger</h3>
-            <p>Juicy beef with melted cheese</p>
-        </div>
-
-        <div class="food-card">
-            <h3>Fries</h3>
-            <p>Crispy golden potato fries</p>
-        </div>
-
-        <div class="food-card">
-            <h3>Pizza</h3>
-            <p>Cheesy pepperoni pizza slice</p>
-        </div>
-
+  <div class="food-grid">
+    {% if products %} {% for p in products %}
+    <div
+      class="food-card {% if p.image_src %}has-bg{% endif %}"
+      {%
+      if
+      p.image_src
+      %}style="background-image: url('{{ p.image_src }}');"
+      {%
+      endif
+      %}
+    >
+      <div class="card-content">
+        <h3>{{ p.prodname }}</h3>
+        <p>{{ p.description }}</p>
+      </div>
     </div>
+    {% endfor %} {% else %}
+    <div class="food-card">
+      <h3>Cheeseburger</h3>
+      <p>Juicy beef with melted cheese</p>
+    </div>
+    <div class="food-card">
+      <h3>Fries</h3>
+      <p>Crispy golden potato fries</p>
+    </div>
+    <div class="food-card">
+      <h3>Pizza</h3>
+      <p>Cheesy pepperoni pizza slice</p>
+    </div>
+    {% endif %}
+  </div>
 </section>
 
 {% endblock %}

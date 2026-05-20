@@ -2,26 +2,34 @@
 
 <section class="products-page">
   <div class="search-container">
-    <div class="filter">
-      <select>
-        <option value="all">All</option>
-        <option value="burger">Burger</option>
-        <option value="fries">Fries</option>
-        <option value="pizza">Pizza</option>
-        <option value="drinks">Drinks</option>
-      </select>
-    </div>
+    <form
+      method="get"
+      action=""
+      style="display: flex; gap: 12px; align-items: center"
+    >
+      <div class="filter">
+        <select name="category" onchange="this.form.submit()">
+          <option value="all" {% if category == 'all' %}selected{% endif %}>All</option>
+          <option value="burgers" {% if category == 'burgers' %}selected{% endif %}>Burgers</option>
+          <option value="fried_chicken" {% if category == 'fried_chicken' %}selected{% endif %}>Fried Chicken Meals</option>
+          <option value="rice_meals" {% if category == 'rice_meals' %}selected{% endif %}>Rice Meals</option>
+          <option value="fries_sides" {% if category == 'fries_sides' %}selected{% endif %}>Fries &amp; Sides</option>
+          <option value="pizza" {% if category == 'pizza' %}selected{% endif %}>Pizza</option>
+          <option value="pasta" {% if category == 'pasta' %}selected{% endif %}>Pasta</option>
+          <option value="drinks" {% if category == 'drinks' %}selected{% endif %}>Drinks</option>
+          <option value="desserts" {% if category == 'desserts' %}selected{% endif %}>Desserts</option>
+        </select>
+      </div>
 
-    <div class="search-bar">
-      <form method="get" action="">
+      <div class="search-bar">
         <input
           type="text"
           name="q"
           placeholder="Search food..."
           value="{{ q }}"
         />
-      </form>
-    </div>
+      </div>
+    </form>
 
     <div class="action-buttons-top">
       <button
@@ -31,7 +39,6 @@
       >
         ♡ Wishlist
       </button>
-
       <button type="button" class="cart-btn" onclick="openModal('cart')">
         🛒 View Cart
       </button>
@@ -90,20 +97,16 @@
     </div>
     {% endfor %}
   </div>
+
   <script>
     function toggleHeart(btn) {
       btn.classList.toggle("active");
-
-      if (btn.classList.contains("active")) {
-        btn.innerHTML = "♥";
-      } else {
-        btn.innerHTML = "♡";
-      }
+      btn.innerHTML = btn.classList.contains("active") ? "♥" : "♡";
     }
 
     /* =========================
-   OPEN MODAL
-========================= */
+       OPEN MODAL
+    ========================= */
 
     function openModal(type) {
       // Save modal state (for refresh persistence)
@@ -114,33 +117,19 @@
       const title = document.getElementById("modal-title");
       const body = document.getElementById("modal-body");
 
-      // safety check (prevents null errors)
       if (!modal || !backdrop || !title || !body) return;
 
       modal.style.display = "block";
       backdrop.style.display = "block";
 
       const routes = {
-        cart: {
-          title: "My Cart",
-          url: "/main/cart/",
-        },
-        wishlist: {
-          title: "My Wishlist",
-          url: "/main/wishlist/",
-        },
-        checkout: {
-          title: "Checkout",
-          url: "/main/checkout/",
-        },
+        cart: { title: "My Cart", url: "/main/cart/" },
+        wishlist: { title: "My Wishlist", url: "/main/wishlist/" },
+        checkout: { title: "Checkout", url: "/main/checkout/" },
       };
 
       const selected = routes[type];
-
-      if (!selected) {
-        console.error("Unknown modal type:", type);
-        return;
-      }
+      if (!selected) return console.error("Unknown modal type:", type);
 
       title.innerText = selected.title;
 
@@ -151,30 +140,28 @@
     }
 
     /* =========================
-   CLOSE MODAL
-========================= */
+       CLOSE MODAL
+    ========================= */
 
     function closeModal() {
-      // REMOVE SAVED STATE
       localStorage.removeItem("activeModal");
-
-      document.getElementById("modal").style.display = "none";
-      document.getElementById("modal-backdrop").style.display = "none";
-      document.getElementById("modal-body").innerHTML = "";
+      const modal = document.getElementById("modal");
+      const backdrop = document.getElementById("modal-backdrop");
+      if (modal) modal.style.display = "none";
+      if (backdrop) backdrop.style.display = "none";
+      const body = document.getElementById("modal-body");
+      if (body) body.innerHTML = "";
     }
 
     /* =========================
-   RESTORE MODAL AFTER REFRESH
-========================= */
+       RESTORE MODAL AFTER REFRESH
+    ========================= */
 
     window.addEventListener("load", () => {
       const savedModal = localStorage.getItem("activeModal");
-
-      if (savedModal) {
-        openModal(savedModal);
-      }
+      if (savedModal) openModal(savedModal);
     });
   </script>
-</section>
 
-{% endblock %}
+  {% endblock %}
+</section>
