@@ -143,3 +143,6 @@ def checkout(request):
 
 def address(request):
     return render(request, "pages/modals/address.html")
+
+def confirmation(request):
+    return render(request, "pages/modals/confirmation.html")

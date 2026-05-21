@@ -11,4 +11,5 @@ urlpatterns = [
     path("wishlist/", views.wishlist, name="wishlist"),
     path("checkout/", views.checkout, name="checkout"),
     path("address/", views.address, name="address"),
+    path("confirmation/", views.confirmation, name="confirmation"),
 ]

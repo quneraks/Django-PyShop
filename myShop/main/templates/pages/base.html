@@ -197,7 +197,7 @@
           const abtn = document.querySelector(`.add-btn[data-id="${c.id}"]`);
           if (abtn) {
             abtn.classList.add("in-cart");
-            abtn.innerText = "Added";
+            abtn.innerText = "✓";
           }
         });
         if (dirty) saveCart(cart);
@@ -416,6 +416,13 @@
         `;
         if (payBtn) payBtn.disabled = false;
       }
+function goToProducts() {
+  // force full navigation (not cached back behavior)
+  window.location.replace("/main/products/");
+  window.location.reload();
+}
+
+
     </script>
   </body>
 </html>

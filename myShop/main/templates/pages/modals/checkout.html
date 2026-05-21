@@ -1,13 +1,12 @@
 <div class="checkout-page">
+
   <!-- SCROLLABLE CONTENT -->
   <div class="checkout-content">
+
     <!-- ORDER ITEMS -->
     <div class="checkout-section">
       <h3>Order Summary</h3>
-
-      <div class="checkout-items">
-        <!-- Items will be inserted by JavaScript -->
-      </div>
+      <div class="checkout-items"></div>
     </div>
 
     <!-- DELIVERY -->
@@ -15,14 +14,13 @@
       <h3>Delivery Address</h3>
 
       <div class="address-selected" onclick="openCityDropdown(event)" style="cursor:pointer">
-        <div class="address-text" onclick="openCityDropdown(event)" style="cursor:pointer">
+        <div class="address-text">
           <strong>Home</strong>
           <p>Tap to add delivery address</p>
         </div>
-
         <span class="arrow">›</span>
       </div>
-      
+
     </div>
 
     <!-- PAYMENT -->
@@ -35,29 +33,32 @@
         <option>Card Payment</option>
       </select>
     </div>
+
   </div>
 
   <!-- STICKY FOOTER -->
   <div class="checkout-footer">
+
     <div class="checkout-summary">
-      <div class="row">
-        <span>Subtotal</span>
-        <span>₱180</span>
-      </div>
-
-      <div class="row">
-        <span>Delivery Fee</span>
-        <span>₱40</span>
-      </div>
-
-      <div class="row total">
-        <span>Total</span>
-        <span>₱220</span>
-      </div>
+      <div class="row"><span>Subtotal</span><span>₱180</span></div>
+      <div class="row"><span>Delivery Fee</span><span>₱40</span></div>
+      <div class="row total"><span>Total</span><span>₱220</span></div>
     </div>
 
-    <button class="pay-btn">Place Order</button>
+<button
+  class="pay-btn"
+  hx-get="/main/confirmation/"
+  hx-target="#modal-body"
+  hx-swap="innerHTML"
+  onclick="placeOrder(); openModal();"
+>
+  Place Order
+</button>
+
   </div>
+
+  </div>
+
 </div>
 
 <script>
@@ -149,4 +150,7 @@
     loadSavedCity();
     renderAddressPreview();
   });
+
+
+  
 </script>
