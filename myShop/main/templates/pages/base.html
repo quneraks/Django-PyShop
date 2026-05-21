@@ -97,6 +97,68 @@
         }
       }
 
+      function lockPageScroll() {
+        const scrollY = window.scrollY || window.pageYOffset || 0;
+        document.body.dataset.prevScrollY = String(scrollY);
+        document.body.dataset.prevStyle = document.body.style.cssText || "";
+        document.documentElement.dataset.prevStyle =
+          document.documentElement.style.cssText || "";
+        document.body.style.position = "fixed";
+        document.body.style.top = `-${scrollY}px`;
+        document.body.style.left = "0";
+        document.body.style.right = "0";
+        document.body.style.width = "100%";
+        document.body.style.overflow = "hidden";
+        document.documentElement.style.overflow = "hidden";
+      }
+
+      function unlockPageScroll() {
+        const prevScrollY = Number(document.body.dataset.prevScrollY || 0);
+        const prevBodyStyle = document.body.dataset.prevStyle || "";
+        const prevHtmlStyle = document.documentElement.dataset.prevStyle || "";
+
+        document.body.style.cssText = prevBodyStyle;
+        document.documentElement.style.cssText = prevHtmlStyle;
+
+        delete document.body.dataset.prevScrollY;
+        delete document.body.dataset.prevStyle;
+        delete document.documentElement.dataset.prevStyle;
+
+        window.requestAnimationFrame(() => {
+          window.scrollTo(0, prevScrollY);
+          document.documentElement.scrollTop = prevScrollY;
+          document.body.scrollTop = prevScrollY;
+        });
+      }
+
+      window.lockPageScroll = lockPageScroll;
+      window.unlockPageScroll = unlockPageScroll;
+
+      function bindModalControls() {
+        const modal = document.getElementById("modal");
+        const backdrop = document.getElementById("modal-backdrop");
+        const closeBtn = document.querySelector(".close-btn");
+
+        if (backdrop && !backdrop.dataset.boundClose) {
+          backdrop.dataset.boundClose = "1";
+          backdrop.addEventListener("click", closeModal);
+        }
+
+        if (closeBtn && !closeBtn.dataset.boundClose) {
+          closeBtn.dataset.boundClose = "1";
+          closeBtn.addEventListener("click", closeModal);
+        }
+
+        if (modal && !modal.dataset.boundCloseStop) {
+          modal.dataset.boundCloseStop = "1";
+          modal.addEventListener("click", function (evt) {
+            evt.stopPropagation();
+          });
+        }
+      }
+
+      document.addEventListener("DOMContentLoaded", bindModalControls);
+
       // After HTMX swaps modal content, render wishlist inside it
       document.body.addEventListener("htmx:afterSwap", function (evt) {
         if (
@@ -104,6 +166,7 @@
           evt.detail.target &&
           evt.detail.target.id === "modal-body"
         ) {
+          bindModalControls();
           renderWishlist();
           renderCart();
           renderCheckout();

@@ -104,17 +104,9 @@
       btn.innerHTML = btn.classList.contains("active") ? "♥" : "♡";
     }
 
-    /* =========================
-       OPEN MODAL
-    ========================= */
-
     function openModal(type) {
-      // Save modal state (for refresh persistence)
       localStorage.setItem("activeModal", type);
-
-      // Prevent the page behind the modal from scrolling
-      document.body.dataset.prevOverflow = document.body.style.overflow || "";
-      document.body.style.overflow = "hidden";
+      if (window.lockPageScroll) window.lockPageScroll();
 
       const modal = document.getElementById("modal");
       const backdrop = document.getElementById("modal-backdrop");
@@ -143,10 +135,6 @@
       });
     }
 
-    /* =========================
-       CLOSE MODAL
-    ========================= */
-
     function closeModal() {
       localStorage.removeItem("activeModal");
       const modal = document.getElementById("modal");
@@ -156,15 +144,8 @@
       const body = document.getElementById("modal-body");
       if (body) body.innerHTML = "";
 
-      // Restore normal page scrolling
-      const prevOverflow = document.body.dataset.prevOverflow;
-      document.body.style.overflow = prevOverflow || "";
-      delete document.body.dataset.prevOverflow;
+      if (window.unlockPageScroll) window.unlockPageScroll();
     }
-
-    /* =========================
-       RESTORE MODAL AFTER REFRESH
-    ========================= */
 
     window.addEventListener("load", () => {
       const savedModal = localStorage.getItem("activeModal");
