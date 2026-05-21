@@ -112,6 +112,10 @@
       // Save modal state (for refresh persistence)
       localStorage.setItem("activeModal", type);
 
+      // Prevent the page behind the modal from scrolling
+      document.body.dataset.prevOverflow = document.body.style.overflow || "";
+      document.body.style.overflow = "hidden";
+
       const modal = document.getElementById("modal");
       const backdrop = document.getElementById("modal-backdrop");
       const title = document.getElementById("modal-title");
@@ -151,6 +155,11 @@
       if (backdrop) backdrop.style.display = "none";
       const body = document.getElementById("modal-body");
       if (body) body.innerHTML = "";
+
+      // Restore normal page scrolling
+      const prevOverflow = document.body.dataset.prevOverflow;
+      document.body.style.overflow = prevOverflow || "";
+      delete document.body.dataset.prevOverflow;
     }
 
     /* =========================

@@ -14,14 +14,15 @@
     <div class="checkout-section">
       <h3>Delivery Address</h3>
 
-      <div class="address-selected" onclick="loadAddressView()">
-        <div class="address-text">
+      <div class="address-selected" onclick="openCityDropdown(event)" style="cursor:pointer">
+        <div class="address-text" onclick="openCityDropdown(event)" style="cursor:pointer">
           <strong>Home</strong>
-          <p>123 Main Street, Nueva Ecija</p>
+          <p>Tap to add delivery address</p>
         </div>
 
         <span class="arrow">›</span>
       </div>
+      
     </div>
 
     <!-- PAYMENT -->
@@ -58,3 +59,94 @@
     <button class="pay-btn">Place Order</button>
   </div>
 </div>
+
+<script>
+  function escapeHtml(s) { return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+
+  const CITY_LIST = [
+    'Valenzuela', 'Caloocan', 'Malabon', 'Navotas', 'Manila', 'San Juan', 'Mandaluyong',
+    'Quezon City', 'Marikina', 'Pasig', 'Taguig', 'Makati', 'Pasay', 'Parañaque',
+    'Las Piñas', 'Muntinlupa', 'Pateros'
+  ];
+
+  let selectedCity = 'Home';
+
+  function loadSavedCity() {
+    try {
+      const saved = JSON.parse(localStorage.getItem('pyshop_address') || 'null');
+      if (saved && saved.city) selectedCity = saved.city;
+    } catch (e) {}
+  }
+
+  function saveCity(city) {
+    selectedCity = city || 'Home';
+    try {
+      localStorage.setItem('pyshop_address', JSON.stringify({ label: selectedCity, city: selectedCity }));
+    } catch (e) {}
+  }
+
+  function renderAddressPreview() {
+    const box = document.querySelector('.address-selected');
+    if (!box) return;
+    box.innerHTML = `
+      <div class="address-text" onclick="openCityDropdown(event)" style="cursor:pointer">
+        <strong>${escapeHtml(selectedCity || 'Home')}</strong>
+        <p>Tap to add delivery address</p>
+      </div>
+      <span class="arrow">›</span>
+    `;
+  }
+
+  function closeCityDropdown() {
+    const box = document.querySelector('.address-selected');
+    if (!box) return;
+    if (box.dataset.orig) {
+      box.innerHTML = box.dataset.orig;
+      delete box.dataset.orig;
+    }
+    document.removeEventListener('click', handleOutsideClick);
+  }
+
+  function handleOutsideClick(ev) {
+    const box = document.querySelector('.address-selected');
+    if (!box) return;
+    if (!box.contains(ev.target)) closeCityDropdown();
+  }
+
+  function openCityDropdown(e) {
+    if (e) e.stopPropagation();
+    const box = document.querySelector('.address-selected');
+    if (!box) return;
+    if (box.querySelector('#city-list-inline')) return;
+
+    const currentCity = selectedCity || 'Valenzuela';
+    const options = CITY_LIST.map((city) => {
+      const active = city === currentCity ? 'background:#f3f7ff;font-weight:600;' : 'background:#fff;';
+      return `<button type="button" class="city-item" data-city="${escapeHtml(city)}" style="display:block;width:100%;text-align:left;padding:10px 12px;border:0;border-bottom:1px solid #eee;${active}">${escapeHtml(city)}${city === currentCity ? ' ✓' : ''}</button>`;
+    }).join('');
+
+    box.dataset.orig = box.innerHTML;
+    box.innerHTML = `
+      <div id="city-list-inline" style="width:100%;max-height:220px;overflow:auto;background:#fff;border:1px solid #e5e5e5;border-radius:8px">
+        ${options}
+      </div>
+    `;
+
+    box.querySelectorAll('.city-item').forEach((btn) => {
+      btn.addEventListener('click', (ev) => {
+        ev.stopPropagation();
+        const city = btn.dataset.city || 'Home';
+        saveCity(city);
+        renderAddressPreview();
+        document.removeEventListener('click', handleOutsideClick);
+      });
+    });
+
+    setTimeout(() => document.addEventListener('click', handleOutsideClick), 10);
+  }
+
+  document.addEventListener('DOMContentLoaded', function() {
+    loadSavedCity();
+    renderAddressPreview();
+  });
+</script>
